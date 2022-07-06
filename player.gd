@@ -85,7 +85,6 @@ func get_input(delta):
 	if dir != 0:
 		var mid_air_slowdown = 1.0 if velocity.y == 0 else AIR_MOVEMENT_MULTIPLIER
 		velocity.x = lerp(velocity.x, dir * max_speed, mid_air_slowdown * acceleration)
-		$Sprite.scale.x = dir
 	else:
 		velocity.x = lerp(velocity.x, 0, friction)
 
