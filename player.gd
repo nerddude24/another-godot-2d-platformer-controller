@@ -1,24 +1,24 @@
 """
-    INPUT ACTIONS: jump, right, left, up, down
+	INPUT ACTIONS: jump, right, left, up, down
 
-    This controller was made for my own games and probably wont 
-    work for others, but here it is anyway
+	This controller was made for my own games and probably wont 
+	work for others, but here it is anyway
 
-    This controller implements smooth movement with friciton and acceleration
-    and easy to calculate jumping with Coyote Time and Jump Buffer
+	This controller implements smooth movement with friciton and acceleration
+	and easy to calculate jumping with Coyote Time and Jump Buffer
 
-    If you are using vscode install colorful comments for clearer code
+	If you are using vscode install colorful comments for clearer code
 
-    Made by: nerddude
+	Made by: nerddude
 """
 extends KinematicBody2D
 
 # * how many units to drop down when dropping down a one way platform
-const DROP_DOWN_UNITS = 1
+const DROP_DOWN_UNITS = 1.5
 
 # * this is a delay to register jump x seconds before hitting the ground
 # * this makes it possible to bunny hop and makes jumping more fun
-const JUMP_BUFFER_TIME = 0.2
+const JUMP_BUFFER_TIME = 0.15
 
 # * gives player extra x seconds to jump after leaving platform
 const COYOTE_TIME = 0.1
@@ -26,6 +26,12 @@ const COYOTE_TIME = 0.1
 # * when player releases jump button, velocity will be multiplied by STOP_JUMP_RATIO
 # * to make it smoother
 const STOP_JUMP_RATIO = 0.5
+
+# * Maximum velocity when falling to make falling smoother and less WOOOOOOO
+const MAX_GRAVITY = 250
+
+# * Multiply acceleration by this when mid air (set to 1 for no effect)
+const AIR_MOVEMENT_MULTIPLIER = 0.75
 
 export var max_speed: float
 export(float, 0, 1.0) var friction = 0.1
@@ -77,7 +83,9 @@ func get_input(delta):
 		dir -= 1
 
 	if dir != 0:
-		velocity.x = lerp(velocity.x, dir * max_speed, acceleration)
+		var mid_air_slowdown = 1.0 if velocity.y == 0 else AIR_MOVEMENT_MULTIPLIER
+		velocity.x = lerp(velocity.x, dir * max_speed, mid_air_slowdown * acceleration)
+		$Sprite.scale.x = dir
 	else:
 		velocity.x = lerp(velocity.x, 0, friction)
 
@@ -131,5 +139,5 @@ func get_input(delta):
 
 func _physics_process(delta):
 	get_input(delta)
-	velocity.y += get_gravity() * delta
+	velocity.y = min(velocity.y + (get_gravity() * delta), MAX_GRAVITY)
 	velocity = move_and_slide(velocity, Vector2.UP)
